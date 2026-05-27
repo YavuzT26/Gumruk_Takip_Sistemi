@@ -20,4 +20,4 @@ Veritabanı, 4 ana modül ve birbiriyle tam ilişkili 10 tablodan oluşmaktadır
 * **Dialect:** Oracle SQL / PostgreSQL standartları (Oracle FreeSQL ortamında test edilmiştir).
 * **Veri Bütünlüğü (Data Integrity):** `PRIMARY KEY` ve `FOREIGN KEY` ilişkileri.
 * **Otomatik Artan Kimlikler:** `GENERATED ALWAYS AS IDENTITY` yapısı ile sekans yönetimi.
-* **Kısıtlamalar (Constraints):** `CHECK` constraint'leri ile hatalı veri girişi engelleme (Örn: Beyanname sonucu sadece 'Onay' veya 'Red' olabilir).
+* **Kısıtlamalar (Constraints):** `CHECK` constraint'leri ile hatalı veri girişi engelleme (Örn: Beyanname sonucu sadece 'Onay' veya 'Ret' olabilir).
