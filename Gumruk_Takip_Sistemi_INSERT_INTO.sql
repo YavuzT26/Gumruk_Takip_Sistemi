@@ -9,7 +9,7 @@ VALUES
     ('Samsung'),
     ('Bershka'),
     ('Zara'),
-    ('Pull&Bear'),
+    ('Pull Bear'),
     ('Mango'),
     ('Mavi'),
     ('Lego'),
