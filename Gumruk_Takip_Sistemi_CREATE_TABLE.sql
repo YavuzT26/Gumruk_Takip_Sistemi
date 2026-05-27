@@ -61,7 +61,7 @@ CREATE TABLE beyanname(
     beyanname_no NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deger NUMBER(15,2) NOT NULL,
-    sonuc VARCHAR2(10) NOT NULL CHECK (sonuc IN ('Onay','Red')),
+    sonuc VARCHAR2(10) NOT NULL CHECK (sonuc IN ('Onay','Ret')),
     plaka VARCHAR2(15) NOT NULL,
     memur_id NUMBER NOT NULL,
     urun_id NUMBER NOT NULL,
