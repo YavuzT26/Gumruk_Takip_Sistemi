@@ -31,9 +31,9 @@ INSERT INTO
 VALUES 
     ('Elektronik', 3),
     ('Giyim', 2),
-    ('İlaç', 5),
+    ('Oyuncak', 1),
     ('Kozmetik', 4),
-    ('Oyuncak', 1);
+    ('İlaç', 5);
 
 /* ÜRÜNLER */
 INSERT INTO 
