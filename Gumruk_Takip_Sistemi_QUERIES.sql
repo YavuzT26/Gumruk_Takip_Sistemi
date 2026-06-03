@@ -66,123 +66,166 @@ Proje Gelişimine Göre Revize Edilmiş Ve Değiştirilmiş Sorular
 
 
     1)
-    SELECT b.beyanname_no, b.deger, f.firma_ad 
-    FROM beyanname b 
-    JOIN firmalar f ON b.firma_id = f.firma_id 
-    WHERE b.deger =  
-            (SELECT MIN(deger) 
-            FROM beyanname b2 
-            JOIN memurlar m ON b2.memur_id = m.memur_id 
-            WHERE m.gorev_birimi = 'Gümrük Muayene Birimi' 
-            ); 
+    
+    SELECT
+    b.beyanname_no AS "Beyanname No",
+    f.firma_ad AS "Beyan Eden Firma",
+    b.deger AS "Beyan Değeri"
+    FROM beyanname b
+    JOIN firmalar f
+    ON b.firma_id=f.firma_id 
+    WHERE b.deger =(
+        SELECT MIN(b2.deger)
+        FROM beyanname b2
+        JOIN memurlar m
+        ON b2.memur_id=m.memur_id
+        WHERE m.gorev_birimi='Gümrük Muayene Birimi'
+    );
+
     2)
 
     SELECT 
-    ut.risk_derecesi, 
-    COUNT(b.beyanname_no) AS onaylanan_islem_sayisi
+    ut.risk_derecesi AS "Risk Derecesi",
+    COUNT(b.beyanname_no) AS "Onaylanan İşlem Sayısı"
     FROM beyanname b
-    JOIN urun u ON b.urun_id = u.urun_id
-    JOIN urun_tipleri ut ON u.tip_id = ut.tip_id
-    WHERE b.sonuc = 'Onay'
-    GROUP BY ut.risk_derecesi
+    JOIN urun u
+    ON b.urun_id = u.urun_id
+    JOIN urun_tipleri ut
+    ON u.tip_id=ut.tip_id
+    WHERE b.sonuc='Onay'
+    GROUP BY ut.risk_derecesi 
     ORDER BY ut.risk_derecesi DESC;
-
+    
     3)
+
     SELECT 
-    m.ad|| ' ' || m.soyad AS "Kontrol Eden Memur",
-    m.gorev_birimi, 
-    sk.kapi_ad, 
-    COUNT(b.beyanname_no) AS inceleme_sayisi
+    m.ad || ' ' || m.soyad AS "Görevli Memur",
+    m.gorev_birimi AS "Görev Birimi",
+    sk.kapi_ad AS "Sınır Kapısı",
+    COUNT(b.beyanname_no) AS "İşlem Sayısı"
     FROM beyanname b
-    JOIN memurlar m ON b.memur_id = m.memur_id
-    JOIN sinir_kapilari sk ON m.kapi_id = sk.kapi_id
-    GROUP BY m.ad, m.soyad, m.gorev_birimi, sk.kapi_ad
-    ORDER BY inceleme_sayisi DESC
-    FETCH FIRST 1 ROWS ONLY;
+    JOIN memurlar m
+    ON b.memur_id=m.memur_id
+    JOIN sinir_kapilari sk
+    ON m.kapi_id=sk.kapi_id
+    GROUP BY m.ad,m.soyad,m.gorev_birimi,sk.kapi_ad 
+    HAVING COUNT(b.beyanname_no) =(
+        SELECT MAX(COUNT(b2.beyanname_no))
+        FROM beyanname b2
+        JOIN memurlar m2
+        ON b2.memur_id=m2.memur_id
+        GROUP BY m2.memur_id
+    )
+    ORDER BY "Görevli Memur" ASC;
 
 
     
 
     4)
     SELECT 
-    ut.risk_derecesi,
-    COUNT(b.beyanname_no) AS toplam_islem_sayisi, 
-    SUM(b.deger) AS toplam_parasal_hacim
+    ut.risk_derecesi AS "Risk Derecesi",
+    COUNT(b.beyanname_no) AS "Riskli İşlem Sayısı",
+    SUM(b.deger) AS "İşlemin Toplam Değeri"
     FROM beyanname b
-    JOIN urun u ON b.urun_id = u.urun_id
-    JOIN urun_tipleri ut ON u.tip_id = ut.tip_id
-    WHERE ut.risk_derecesi >= 4
-    GROUP BY ut.risk_derecesi;
+    JOIN urun u
+    ON b.urun_id=u.urun_id
+    JOIN urun_tipleri ut
+    ON u.tip_id=ut.tip_id
+    WHERE ut.risk_derecesi > 3
+    GROUP BY ut.risk_derecesi
+    ORDER BY ut.risk_derecesi DESC;
     
     
     5)
 
     SELECT 
-    sk.kapi_ad, 
-    COUNT(b.beyanname_no) AS yuksek_risk_islem_sayisi
-    FROM beyanname b
-    JOIN urun u ON b.urun_id = u.urun_id
-    JOIN urun_tipleri ut ON u.tip_id = ut.tip_id
-    JOIN memurlar m ON b.memur_id = m.memur_id
-    JOIN sinir_kapilari sk ON m.kapi_id = sk.kapi_id
-    WHERE ut.risk_derecesi = 5
-    GROUP BY sk.kapi_ad
-    ORDER BY yuksek_risk_islem_sayisi DESC
+    sk.kapi_ad AS "Sınır Kapısı",
+    COUNT(b.beyanname_no) AS "En Yüksek Riskli İşlem Sayısı"
+    FROM Beyanname b
+    JOIN memurlar m
+    ON b.memur_id=m.memur_id
+    JOIN sinir_kapilari sk 
+    ON m.kapi_id=sk.kapi_id
+    JOIN urun u
+    ON b.urun_id=u.urun_id
+    JOIN urun_tipleri ut
+    ON u.tip_id=ut.tip_id
+    WHERE ut.risk_derecesi =(
+        SELECT MAX(ut2.risk_derecesi)
+        FROM urun_tipleri ut2
+    )
+    GROUP BY sk.kapi_ad 
+    ORDER BY COUNT(b.beyanname_no)DESC
     FETCH FIRST 1 ROW ONLY;
 
     6)
 
     SELECT 
-    b.tarih, 
-    b.plaka, 
-    f.firma_ad, 
-    sk.kapi_ad
+    b.tarih AS "İşlem Tarihi",
+    b.plaka AS "Araç Plakası",
+    f.firma_ad AS "İlgili Firma",
+    sk.kapi_ad AS "Geçtiği Sınır Kapısı"
     FROM beyanname b
-    JOIN firmalar f ON b.firma_id = f.firma_id
-    JOIN memurlar m ON b.memur_id = m.memur_id
-    JOIN sinir_kapilari sk ON m.kapi_id = sk.kapi_id
-    WHERE b.sonuc ='Ret'
+    JOIN firmalar f
+    ON b.firma_id=f.firma_id
+    JOIN memurlar m
+    ON b.memur_id=m.memur_id
+    JOIN sinir_kapilari sk
+    ON m.kapi_id=sk.kapi_id
+    WHERE b.sonuc='Ret'
     ORDER BY b.tarih DESC;
 
     7)
-        SELECT b.beyanname_no, b.plaka, b.sonuc 
-        FROM beyanname b 
-        JOIN araclar a ON b.plaka = a.plaka 
-        WHERE b.sonuc = 'Onay' 
-        AND a.ulke_kod IN  
-                (SELECT a2.ulke_kod  
-                 FROM beyanname b2 
-                 JOIN araclar a2 ON b2.plaka = a2.plaka 
-                 WHERE b2.sonuc = 'Ret' 
-                );  
+        SELECT 
+    b.beyanname_no AS "Beyanname No",
+    b.plaka AS "Araç Plakası",
+    b.sonuc AS "İşlem Sonucu"
+    FROM beyanname b
+    JOIN araclar a
+    ON b.plaka=a.plaka
+    WHERE b.sonuc='Onay'
+    AND a.ulke_kod IN(
+        SELECT a2.ulke_kod
+        FROM araclar a2
+        JOIN beyanname b2
+        ON a2.plaka=b2.plaka
+        WHERE b2.sonuc='Ret'
+        )
+    ORDER BY b.beyanname_no ASC;
 
     8)
 
-    SELECT 
-    f.firma_ad AS marka, 
-    ut.tip_ad AS urun_tipi, 
-    COUNT(b.beyanname_no) AS toplam_gecis_sayisi,
-    SUM(b.deger) AS toplam_deger
+    SELECT
+    f.firma_ad AS "Marka",
+    ut.tip_ad AS "Ürün Tipi",
+    COUNT(b.beyanname_no) AS "Toplam Geçiş Sayısı",
+    SUM(b.deger) AS "Toplam Değer"
     FROM beyanname b
-    JOIN firmalar f ON b.firma_id = f.firma_id
-    JOIN urun u ON b.urun_id = u.urun_id
-    JOIN urun_tipleri ut ON u.tip_id = ut.tip_id
-    WHERE b.tarih BETWEEN TIMESTAMP '2026-01-01 00:00:00' AND TIMESTAMP '2026-03-31 23:59:59'
+    JOIN urun u
+    ON b.urun_id=u.urun_id
+    JOIN urun_tipleri ut
+    ON u.tip_id=ut.tip_id
+    JOIN firmalar f
+    ON b.firma_id=f.firma_id
+    WHERE b.tarih BETWEEN TIMESTAMP '2026-01-01 00:00:00' 
+    AND TIMESTAMP '2026-03-31 23:59:59'
     GROUP BY f.firma_ad, ut.tip_ad
-    ORDER BY toplam_gecis_sayisi DESC, marka ASC;
+    ORDER BY "Toplam Geçiş Sayısı" DESC, "Marka" ASC;
 
     9)
-    SELECT b.beyanname_no, b.deger, sk.kapi_ad 
-    FROM beyanname b 
-    JOIN memurlar m ON b.memur_id = m.memur_id 
-    JOIN sinir_kapilari sk ON m.kapi_id = sk.kapi_id 
-    WHERE b.sonuc = 'Ret' 
-    AND b.deger > 100000.00 
-    AND m.kapi_id IN 
-            ( SELECT kapi_id 
-              FROM sinir_kapilari 
-              WHERE peron_sayisi > 10 
-            );
+    SELECT
+    b.beyanname_no AS "Beyanname No",
+    b.deger AS "Beyan Değeri",
+    sk.kapi_ad AS "Sınır Kapısı"
+    FROM beyanname b
+    JOIN memurlar m
+    ON b.memur_id=m.memur_id
+    JOIN sinir_kapilari sk
+    ON m.kapi_id=sk.kapi_id
+    WHERE b.sonuc='Ret'
+    AND b.deger>100000
+    AND sk.peron_sayisi>10
+    ORDER BY b.beyanname_no;
 
     10)
     SELECT b.beyanname_no, b.deger, b.sonuc 
