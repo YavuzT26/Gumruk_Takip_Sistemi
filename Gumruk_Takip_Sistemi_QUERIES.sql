@@ -217,7 +217,7 @@ Proje Gelişimine Göre Revize Edilmiş Ve Değiştirilmiş Sorular
     b.beyanname_no AS "Beyanname No",
     b.deger AS "Beyan Değeri",
     sk.kapi_ad AS "Sınır Kapısı"
-    FROM beyanname b
+    bFROM beyanname b
     JOIN memurlar m
     ON b.memur_id=m.memur_id
     JOIN sinir_kapilari sk
@@ -228,14 +228,18 @@ Proje Gelişimine Göre Revize Edilmiş Ve Değiştirilmiş Sorular
     ORDER BY b.beyanname_no;
 
     10)
-    SELECT b.beyanname_no, b.deger, b.sonuc 
-    FROM beyanname b 
-    WHERE b.deger > 50000.00 
-    AND b.urun_id IN 
-            (SELECT u.urun_id 
-             FROM urun u 
-             JOIN urun_tipleri ut ON u.tip_id = ut.tip_id 
-             WHERE ut.tip_ad = 'Elektronik' 
-             AND u.urun_ad LIKE '%Makinesi%' 
-            ); 
+    SELECT 
+    b.beyanname_no AS "Beyanname No",
+    u.urun_ad AS "Ürün",
+    b.deger AS "Ürün Değeri",
+    b.sonuc AS "İşlem Sonucu"
+    FROM beyanname b
+    JOIN urun u 
+    ON b.urun_id=u.urun_id
+    JOIN urun_tipleri ut
+    ON u.tip_id=ut.tip_id
+    WHERE ut.tip_ad ='Elektronik'
+    AND b.deger >50000
+    AND u.urun_ad LIKE '%Makinesi'
+    ORDER BY b.beyanname_no ASC; 
 */
